@@ -1,0 +1,4639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>IRON FRONT — FINAL</title>
+
+<style>
+*{box-sizing:border-box}
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#080909;
+    color:white;
+    font-family:Arial,Helvetica,sans-serif;
+}
+canvas{display:block}
+
+#menu,#select,#gameover{
+    position:absolute;
+    inset:0;
+    z-index:20;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:radial-gradient(circle,#303536,#080909 75%);
+}
+
+.panel{
+    width:min(950px,94%);
+    max-height:92%;
+    overflow:auto;
+    padding:30px;
+    background:rgba(9,12,13,.97);
+    border:2px solid #666;
+    border-radius:14px;
+    text-align:center;
+    box-shadow:0 0 50px #000;
+}
+
+h1{
+    margin:0 0 8px;
+    font-size:52px;
+    letter-spacing:6px;
+}
+h2{margin:8px 0 22px}
+
+button{
+    padding:13px 24px;
+    margin:7px;
+    border:2px solid #777;
+    border-radius:7px;
+    background:#292d2e;
+    color:white;
+    font-size:17px;
+    cursor:pointer;
+}
+button:hover{background:#414748}
+
+.tanks{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:15px;
+}
+
+.card{
+    width:180px;
+    padding:15px;
+    background:#171a1b;
+    border:2px solid #555;
+    border-radius:9px;
+    cursor:pointer;
+    transition:.15s;
+}
+.card:hover{
+    transform:translateY(-3px);
+    border-color:#aaa;
+}
+
+.preview{
+    height:95px;
+    position:relative;
+}
+.pbody{
+    position:absolute;
+    left:38px;
+    top:40px;
+    width:100px;
+    height:38px;
+    background:#707575;
+    border-radius:8px;
+}
+.pturret{
+    position:absolute;
+    left:65px;
+    top:23px;
+    width:58px;
+    height:30px;
+    background:#555b5b;
+    border-radius:8px;
+}
+.pgun{
+    position:absolute;
+    left:110px;
+    top:34px;
+    width:65px;
+    height:8px;
+    background:#aaa;
+}
+
+.legend{
+    color:#bbb;
+    line-height:1.5;
+    font-size:13px;
+}
+
+#hud{
+    position:absolute;
+    inset:0;
+    z-index:5;
+    pointer-events:none;
+    display:none;
+}
+
+.half{
+    position:absolute;
+    top:0;
+    width:50%;
+    height:100%;
+}
+
+#hud1{
+    left:0;
+    border-right:2px solid rgba(255,255,255,.55);
+}
+#hud2{right:0}
+
+.health{
+    position:absolute;
+    top:15px;
+    width:260px;
+    height:26px;
+    background:#111;
+    border:2px solid #888;
+}
+#hud1 .health{left:16px}
+#hud2 .health{right:16px}
+
+.hpfill{
+    width:100%;
+    height:100%;
+    background:#55a84b;
+    transition:width .12s;
+}
+.hptext{
+    position:absolute;
+    inset:0;
+    text-align:center;
+    line-height:22px;
+    font-weight:bold;
+    text-shadow:0 2px 4px black;
+}
+
+.weapon{
+    position:absolute;
+    top:49px;
+    font-size:18px;
+    font-weight:bold;
+    text-shadow:0 2px 4px black;
+}
+#hud1 .weapon{left:18px}
+#hud2 .weapon{right:18px}
+
+.crosshair{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:70px;
+    height:70px;
+    transform:translate(-50%,-50%);
+}
+.crosshair:before,
+.crosshair:after{
+    content:"";
+    position:absolute;
+    background:#fff;
+}
+.crosshair:before{
+    width:2px;
+    height:70px;
+    left:34px;
+}
+.crosshair:after{
+    width:70px;
+    height:2px;
+    top:34px;
+}
+.crosshair span{
+    position:absolute;
+    width:22px;
+    height:22px;
+    left:24px;
+    top:24px;
+    border:2px solid white;
+    border-radius:50%;
+}
+
+.crosshair.green:before,
+.crosshair.green:after{background:#43ff43}
+.crosshair.green span{border-color:#43ff43}
+
+.crosshair.yellow:before,
+.crosshair.yellow:after{background:#ffe342}
+.crosshair.yellow span{border-color:#ffe342}
+
+.crosshair.red:before,
+.crosshair.red:after{background:#ff3c3c}
+.crosshair.red span{border-color:#ff3c3c}
+
+.controls{
+    position:absolute;
+    bottom:14px;
+    padding:9px 12px;
+    background:rgba(0,0,0,.68);
+    border:1px solid #777;
+    border-radius:7px;
+    font-size:12px;
+    line-height:1.5;
+    text-shadow:0 1px 3px black;
+}
+#hud1 .controls{left:14px}
+#hud2 .controls{right:14px;text-align:right}
+
+.status{
+    position:absolute;
+    bottom:172px;
+    font-size:13px;
+    text-shadow:0 2px 3px black;
+}
+#hud1 .status{left:18px}
+#hud2 .status{right:18px;text-align:right}
+
+.map{
+    position:absolute;
+    bottom:14px;
+    width:145px;
+    height:145px;
+    background:#171a18;
+    border:2px solid #aaa;
+}
+#hud1 .map{right:14px}
+#hud2 .map{left:14px}
+
+#gameover{
+    display:none;
+}
+
+#gameover h1{
+    font-size:55px;
+}
+
+#message{
+    margin:20px;
+    font-size:20px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="menu">
+    <div class="panel">
+        <h1>IRON FRONT</h1>
+        <p><b>FINAL EDITION — 1v1 TANK WARFARE</b></p>
+
+        <p class="legend">
+            TWO PLAYERS • ONE PHYSICAL BATTLEFIELD • MAXIMUM DESTRUCTION
+            <br><br>
+            A larger ruined city separates the two spawn zones.
+            Find the enemy, use cover, destroy buildings and control the battlefield.
+        </p>
+
+        <button id="start">START BATTLE</button>
+    </div>
+</div>
+
+<div id="select" style="display:none">
+    <div class="panel">
+        <h2 id="selectTitle">PLAYER 1 — CHOOSE TANK</h2>
+        <div class="tanks" id="tankCards"></div>
+
+        <p class="legend">
+            <span style="color:#55ff55">GREEN</span> = strong armor •
+            <span style="color:#ffe342">YELLOW</span> = medium armor •
+            <span style="color:#ff4444">RED</span> = weak armor
+        </p>
+    </div>
+</div>
+
+<div id="gameover">
+    <div class="panel">
+        <h1 id="winner">PLAYER WINS</h1>
+        <div id="message"></div>
+        <button id="rematch">REMATCH</button>
+        <button id="mainmenu">MAIN MENU</button>
+    </div>
+</div>
+
+<div id="hud">
+
+    <div id="hud1" class="half">
+        <div class="health">
+            <div id="hp1" class="hpfill"></div>
+            <div id="hpt1" class="hptext">100 HP</div>
+        </div>
+
+        <div id="weapon1" class="weapon">AP</div>
+
+        <div id="cross1" class="crosshair">
+            <span></span>
+        </div>
+
+        <div id="status1" class="status"></div>
+
+        <div class="controls">
+            <b>P1</b><br>
+            W/S — DRIVE<br>
+            A/D — TURN TANK<br>
+            Q/E — TURN TURRET<br>
+            SPACE — FIRE<br>
+            1 MG • 2 HE • 3 AP
+        </div>
+
+        <canvas id="map1" class="map" width="145" height="145"></canvas>
+    </div>
+
+    <div id="hud2" class="half">
+        <div class="health">
+            <div id="hp2" class="hpfill"></div>
+            <div id="hpt2" class="hptext">100 HP</div>
+        </div>
+
+        <div id="weapon2" class="weapon">AP</div>
+
+        <div id="cross2" class="crosshair">
+            <span></span>
+        </div>
+
+        <div id="status2" class="status"></div>
+
+        <div class="controls">
+            <b>P2</b><br>
+            ↑/↓ — DRIVE<br>
+            ←/→ — TURN TANK<br>
+            N/M — TURN TURRET<br>
+            ENTER — FIRE<br>
+            J MG • K HE • L AP
+        </div>
+
+        <canvas id="map2" class="map" width="145" height="145"></canvas>
+    </div>
+
+</div>
+
+<script type="module">
+
+import * as THREE from
+"https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js";
+
+
+/* =========================================================
+   RENDERER
+========================================================= */
+
+const renderer=new THREE.WebGLRenderer({
+    antialias:true
+});
+
+renderer.setPixelRatio(
+    Math.min(devicePixelRatio,2)
+);
+
+renderer.setSize(
+    innerWidth,
+    innerHeight
+);
+
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=
+    THREE.PCFSoftShadowMap;
+
+renderer.autoClear=false;
+
+document.body.appendChild(
+    renderer.domElement
+);
+
+
+/* =========================================================
+   SCENE
+========================================================= */
+
+const scene=new THREE.Scene();
+
+scene.background=
+    new THREE.Color(0x737877);
+
+scene.fog=new THREE.Fog(
+    0x737877,
+    120,
+    520
+);
+
+const clock=new THREE.Clock();
+
+const hemi=new THREE.HemisphereLight(
+    0xcbd3d1,
+    0x202321,
+    2
+);
+
+scene.add(hemi);
+
+const sun=new THREE.DirectionalLight(
+    0xffffff,
+    2.7
+);
+
+sun.position.set(
+    -120,
+    220,
+    100
+);
+
+sun.castShadow=true;
+
+sun.shadow.mapSize.set(
+    2048,
+    2048
+);
+
+sun.shadow.camera.left=-380;
+sun.shadow.camera.right=380;
+sun.shadow.camera.top=380;
+sun.shadow.camera.bottom=-380;
+
+scene.add(sun);
+
+
+/* =========================================================
+   MATERIALS
+========================================================= */
+
+function material(
+    color,
+    roughness=1
+){
+    return new THREE.MeshStandardMaterial({
+        color,
+        roughness,
+        metalness:.12
+    });
+}
+
+const MAT={
+
+    ground:material(0x4b514d),
+    road:material(0x292c2c),
+    concrete:material(0x666563),
+    brick:material(0x604d42),
+    rubble:material(0x555452),
+    metal:material(0x3d4242),
+    darkMetal:material(0x222525),
+    wood:material(0x59452f),
+    tree:material(0x253b28)
+
+};
+
+
+/* =========================================================
+   BIGGER WORLD
+========================================================= */
+
+const WORLD=330;
+
+const ground=new THREE.Mesh(
+    new THREE.PlaneGeometry(
+        WORLD*2,
+        WORLD*2
+    ),
+    MAT.ground
+);
+
+ground.rotation.x=-Math.PI/2;
+ground.receiveShadow=true;
+
+scene.add(ground);
+
+const objects=[];
+const destructibles=[];
+const permanentRoads=[];
+const craters=[];
+const particles=[];
+const effects=[];
+const shells=[];
+
+
+/* =========================================================
+   OBJECT CREATOR
+========================================================= */
+
+function addBox(
+    name,
+    x,y,z,
+    sx,sy,sz,
+    mat,
+    destructible=false,
+    hp=100
+){
+
+    const mesh=new THREE.Mesh(
+        new THREE.BoxGeometry(
+            sx,sy,sz
+        ),
+        mat
+    );
+
+    mesh.position.set(
+        x,y,z
+    );
+
+    mesh.castShadow=true;
+    mesh.receiveShadow=true;
+
+    mesh.name=name;
+
+    scene.add(mesh);
+
+    const obj={
+        mesh,
+        name,
+        hp,
+        maxhp:hp,
+        destructible,
+        broken:false,
+        sx,
+        sy,
+        sz
+    };
+
+    objects.push(obj);
+
+    if(destructible)
+        destructibles.push(obj);
+
+    return obj;
+}
+
+
+/* =========================================================
+   ROAD SYSTEM
+   PERMANENT ROUTES
+========================================================= */
+
+function road(
+    x,z,w,d
+){
+
+    const r=addBox(
+        "ROAD",
+        x,.03,z,
+        w,.05,d,
+        MAT.road,
+        false
+    );
+
+    permanentRoads.push(r);
+}
+
+
+/* Main battlefield roads */
+road(
+    0,
+    0,
+    52,
+    WORLD*2
+);
+
+road(
+    0,
+    0,
+    WORLD*2,
+    48
+);
+
+
+/* Permanent outer bypasses */
+road(
+    -170,
+    0,
+    26,
+    WORLD*2
+);
+
+road(
+    170,
+    0,
+    26,
+    WORLD*2
+);
+
+road(
+    0,
+    -170,
+    WORLD*2,
+    26
+);
+
+road(
+    0,
+    170,
+    WORLD*2,
+    26
+);
+
+
+/* =========================================================
+   DESTRUCTIBLE BUILDINGS
+========================================================= */
+
+function building(
+    x,z,w,d,h
+){
+
+    /*
+       Main building.
+       HIGH HP makes buildings substantial,
+       but HE/AP can still destroy them.
+    */
+
+    const main=addBox(
+        "BUILDING",
+        x,
+        h/2,
+        z,
+        w,
+        h,
+        d,
+        MAT.brick,
+        true,
+        260
+    );
+
+    /*
+       Individual structural sections.
+       This makes the destruction feel less
+       like the whole building simply disappearing.
+    */
+
+    const sections=[];
+
+    const cols=
+        Math.max(
+            2,
+            Math.floor(w/12)
+        );
+
+    const rows=
+        Math.max(
+            2,
+            Math.floor(h/8)
+        );
+
+    for(
+        let ix=0;
+        ix<cols;
+        ix++
+    ){
+
+        for(
+            let iy=0;
+            iy<rows;
+            iy++
+        ){
+
+            const px=
+                x-w/2+
+                (ix+.5)*
+                (w/cols);
+
+            const py=
+                4+
+                iy*
+                (h-8)/rows;
+
+            const pz=
+                z-
+                d/2-
+                .12;
+
+            /*
+               Front facade pieces.
+               They have independent HP so explosions
+               can chew through the building.
+            */
+
+            const panel=addBox(
+                "BUILDING_SECTION",
+                px,
+                py,
+                pz,
+                w/cols*.9,
+                Math.max(3,(h-8)/rows*.8),
+                .45,
+                MAT.brick,
+                true,
+                55
+            );
+
+            sections.push(panel);
+        }
+    }
+
+    /*
+       Roof chunks
+    */
+
+    for(let i=0;i<8;i++){
+
+        addBox(
+            "ROOF_RUBBLE",
+            x+
+            (Math.random()-.5)*
+            w*.7,
+
+            h+.45,
+
+            z+
+            (Math.random()-.5)*
+            d*.7,
+
+            3+
+            Math.random()*5,
+
+            .7,
+
+            3+
+            Math.random()*5,
+
+            MAT.concrete,
+            true,
+            35
+        );
+    }
+
+    return main;
+}
+
+
+/*
+   IMPORTANT:
+   Buildings are deliberately placed in the
+   middle zones between the two spawns.
+*/
+
+
+/* Northwest */
+building(
+    -205,
+    -205,
+    52,
+    45,
+    25
+);
+
+building(
+    -270,
+    -125,
+    42,
+    58,
+    20
+);
+
+building(
+    -210,
+    -65,
+    58,
+    42,
+    27
+);
+
+
+/* Northeast */
+building(
+    205,
+    -205,
+    55,
+    44,
+    24
+);
+
+building(
+    270,
+    -125,
+    42,
+    55,
+    22
+);
+
+building(
+    210,
+    -65,
+    58,
+    44,
+    28
+);
+
+
+/* Southwest */
+building(
+    -205,
+    205,
+    55,
+    45,
+    23
+);
+
+building(
+    -270,
+    125,
+    43,
+    55,
+    21
+);
+
+building(
+    -210,
+    65,
+    58,
+    42,
+    27
+);
+
+
+/* Southeast */
+building(
+    205,
+    205,
+    54,
+    46,
+    26
+);
+
+building(
+    270,
+    125,
+    43,
+    55,
+    21
+);
+
+building(
+    210,
+    65,
+    60,
+    43,
+    28
+);
+
+
+/* CENTRAL CITY */
+building(
+    -70,
+    -115,
+    52,
+    40,
+    24
+);
+
+building(
+    70,
+    -115,
+    52,
+    40,
+    24
+);
+
+building(
+    -70,
+    115,
+    52,
+    40,
+    24
+);
+
+building(
+    70,
+    115,
+    52,
+    40,
+    24
+);
+
+
+/* Smaller center buildings */
+building(
+    -120,
+    -25,
+    38,
+    32,
+    17
+);
+
+building(
+    120,
+    -25,
+    38,
+    32,
+    17
+);
+
+building(
+    -120,
+    25,
+    38,
+    32,
+    17
+);
+
+building(
+    120,
+    25,
+    38,
+    32,
+    17
+);
+
+
+/* =========================================================
+   WALLS
+========================================================= */
+
+function wall(
+    x,z,w,d,h
+){
+
+    addBox(
+        "WALL",
+        x,
+        h/2,
+        z,
+        w,
+        h,
+        d,
+        MAT.concrete,
+        true,
+        130
+    );
+}
+
+wall(
+    -150,
+    -175,
+    70,
+    4,
+    8
+);
+
+wall(
+    150,
+    -175,
+    70,
+    4,
+    8
+);
+
+wall(
+    -150,
+    175,
+    70,
+    4,
+    8
+);
+
+wall(
+    150,
+    175,
+    70,
+    4,
+    8
+);
+
+wall(
+    -175,
+    0,
+    4,
+    90,
+    7
+);
+
+wall(
+    175,
+    0,
+    4,
+    90,
+    7
+);
+
+
+/* =========================================================
+   BRIDGES
+========================================================= */
+
+function bridge(
+    x,z,w,d
+){
+
+    addBox(
+        "BRIDGE",
+        x,
+        7,
+        z,
+        w,
+        3,
+        d,
+        MAT.concrete,
+        true,
+        320
+    );
+
+    for(
+        let i=-2;
+        i<=2;
+        i++
+    ){
+
+        const supportX=
+            x+i*(w/5);
+
+        addBox(
+            "BRIDGE_SUPPORT",
+            supportX,
+            3,
+            z,
+            3,
+            6,
+            3,
+            MAT.darkMetal,
+            true,
+            85
+        );
+    }
+}
+
+bridge(
+    0,
+    -250,
+    90,
+    20
+);
+
+bridge(
+    0,
+    250,
+    90,
+    20
+);
+
+
+/* =========================================================
+   BARRICADES
+========================================================= */
+
+function barricade(
+    x,z
+){
+
+    addBox(
+        "BARRICADE",
+        x,
+        1,
+        z,
+        9,
+        2,
+        2,
+        MAT.wood,
+        true,
+        35
+    );
+
+    addBox(
+        "BARRICADE",
+        x,
+        1,
+        z,
+        2,
+        2,
+        9,
+        MAT.wood,
+        true,
+        35
+    );
+}
+
+for(
+    let i=0;
+    i<35;
+    i++
+){
+
+    barricade(
+        (Math.random()-.5)*
+        540,
+
+        (Math.random()-.5)*
+        540
+    );
+}
+
+
+/* =========================================================
+   CRATES
+========================================================= */
+
+for(
+    let i=0;
+    i<65;
+    i++
+){
+
+    addBox(
+        "CRATE",
+        (Math.random()-.5)*
+        560,
+
+        1.3,
+
+        (Math.random()-.5)*
+        560,
+
+        2.5,
+        2.5,
+        2.5,
+
+        MAT.wood,
+        true,
+        25
+    );
+}
+
+
+/* =========================================================
+   TREES
+========================================================= */
+
+for(
+    let i=0;
+    i<55;
+    i++
+){
+
+    const x=
+        (Math.random()-.5)*
+        600;
+
+    const z=
+        (Math.random()-.5)*
+        600;
+
+    /*
+       Keep trees away from exact center roads.
+    */
+
+    if(
+        Math.abs(x)<35 ||
+        Math.abs(z)<35
+    ){
+        i--;
+        continue;
+    }
+
+    const trunk=
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                1.2,
+                1.2,
+                6,
+                10
+            ),
+            MAT.wood
+        );
+
+    trunk.position.set(
+        x,
+        3,
+        z
+    );
+
+    trunk.castShadow=true;
+
+    scene.add(trunk);
+
+    const crown=
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                3.5,
+                3.5,
+                5,
+                10
+            ),
+            MAT.tree
+        );
+
+    crown.position.set(
+        x,
+        7,
+        z
+    );
+
+    crown.castShadow=true;
+
+    scene.add(crown);
+
+    const obj={
+        mesh:crown,
+        name:"TREE",
+        hp:40,
+        maxhp:40,
+        destructible:true,
+        broken:false,
+        sx:7,
+        sy:8,
+        sz:7
+    };
+
+    objects.push(obj);
+    destructibles.push(obj);
+}
+
+
+/* =========================================================
+   ABANDONED VEHICLES
+========================================================= */
+
+for(
+    let i=0;
+    i<25;
+    i++
+){
+
+    const obj=addBox(
+        "CAR",
+
+        (Math.random()-.5)*
+        550,
+
+        1.2,
+
+        (Math.random()-.5)*
+        550,
+
+        7,
+        2.2,
+        3.5,
+
+        MAT.metal,
+        true,
+        75
+    );
+
+    obj.mesh.rotation.y=
+        Math.random()*
+        Math.PI;
+}
+
+
+/* =========================================================
+   RUBBLE
+========================================================= */
+
+function makeRubble(
+    x,z,count
+){
+
+    for(
+        let i=0;
+        i<count;
+        i++
+    ){
+
+        const s=
+            .8+
+            Math.random()*
+            2.5;
+
+        addBox(
+            "RUBBLE",
+
+            x+
+            (Math.random()-.5)*
+            14,
+
+            s/2,
+
+            z+
+            (Math.random()-.5)*
+            14,
+
+            s,
+            s*.8,
+            s,
+
+            MAT.rubble,
+            true,
+            28
+        );
+    }
+}
+
+makeRubble(
+    -55,
+    -55,
+    28
+);
+
+makeRubble(
+    55,
+    -55,
+    28
+);
+
+makeRubble(
+    -55,
+    55,
+    28
+);
+
+makeRubble(
+    55,
+    55,
+    28
+);
+
+makeRubble(
+    -145,
+    0,
+    25
+);
+
+makeRubble(
+    145,
+    0,
+    25
+);
+
+
+/* =========================================================
+   TANK DATA
+========================================================= */
+
+const TANKS={
+
+    scout:{
+        name:"SCOUT",
+        speed:24,
+        accel:18,
+        turn:1.8,
+        mass:8,
+        front:42,
+        side:22,
+        rear:16,
+        apPen:70,
+        apDamage:31,
+        hePen:30,
+        heDamage:16,
+        mgDamage:2,
+        apReload:2.5,
+        heReload:4
+    },
+
+    medium:{
+        name:"MEDIUM",
+        speed:18,
+        accel:13,
+        turn:1.25,
+        mass:15,
+        front:62,
+        side:36,
+        rear:25,
+        apPen:78,
+        apDamage:32,
+        hePen:35,
+        heDamage:17,
+        mgDamage:2,
+        apReload:2.8,
+        heReload:4.5
+    },
+
+    heavy:{
+        name:"HEAVY",
+        speed:12,
+        accel:8,
+        turn:.8,
+        mass:28,
+        front:92,
+        side:58,
+        rear:34,
+        apPen:82,
+        apDamage:34,
+        hePen:42,
+        heDamage:18,
+        mgDamage:2,
+        apReload:3.2,
+        heReload:5
+    },
+
+    hunter:{
+        name:"HUNTER",
+        speed:15,
+        accel:11,
+        turn:1,
+        mass:20,
+        front:55,
+        side:30,
+        rear:20,
+        apPen:110,
+        apDamage:33,
+        hePen:25,
+        heDamage:15,
+        mgDamage:2,
+        apReload:2.2,
+        heReload:4
+    }
+
+};
+
+
+/* =========================================================
+   TANK CREATION
+========================================================= */
+
+function createTank(
+    color,
+    data,
+    x,
+    z,
+    rotation
+){
+
+    const root=
+        new THREE.Group();
+
+    root.position.set(
+        x,
+        0,
+        z
+    );
+
+    root.rotation.y=
+        rotation;
+
+    scene.add(root);
+
+    const bodyMat=
+        material(color);
+
+    const dark=
+        material(
+            color===0x356b35
+            ?0x263f26
+            :0x444444
+        );
+
+    const metal=
+        MAT.darkMetal;
+
+
+    /* LOWER BODY */
+
+    const lower=
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                8,
+                2.2,
+                12
+            ),
+            dark
+        );
+
+    lower.position.y=2;
+    lower.castShadow=true;
+
+    root.add(lower);
+
+
+    /* UPPER BODY */
+
+    const upper=
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                7,
+                2.5,
+                8
+            ),
+            bodyMat
+        );
+
+    upper.position.y=4;
+    upper.castShadow=true;
+
+    root.add(upper);
+
+
+    /* WHEELS */
+
+    for(
+        const side of [-1,1]
+    ){
+
+        for(
+            let i=-2;
+            i<=2;
+            i++
+        ){
+
+            const wheel=
+                new THREE.Mesh(
+                    new THREE.CylinderGeometry(
+                        1.35,
+                        1.35,
+                        1.2,
+                        14
+                    ),
+                    metal
+                );
+
+            wheel.rotation.z=
+                Math.PI/2;
+
+            wheel.position.set(
+                side*4,
+                1.6,
+                i*2.3
+            );
+
+            wheel.castShadow=true;
+
+            root.add(wheel);
+        }
+    }
+
+
+    /* TURRET */
+
+    const turret=
+        new THREE.Group();
+
+    turret.position.y=
+        5.5;
+
+    root.add(turret);
+
+
+    const turretBody=
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                5.8,
+                1.8,
+                6
+            ),
+            bodyMat
+        );
+
+    turretBody.castShadow=true;
+
+    turret.add(turretBody);
+
+
+    const mantlet=
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                2.7,
+                2.1,
+                1.5
+            ),
+            dark
+        );
+
+    mantlet.position.set(
+        0,
+        .2,
+        3.2
+    );
+
+    mantlet.castShadow=true;
+
+    turret.add(mantlet);
+
+
+    const barrel=
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                .45,
+                .55,
+                10,
+                16
+            ),
+            metal
+        );
+
+    barrel.rotation.x=
+        Math.PI/2;
+
+    barrel.position.set(
+        0,
+        .2,
+        7.3
+    );
+
+    barrel.castShadow=true;
+
+    turret.add(barrel);
+
+
+    const muzzle=
+        new THREE.Object3D();
+
+    muzzle.position.set(
+        0,
+        .2,
+        12.4
+    );
+
+    turret.add(muzzle);
+
+
+    return{
+
+        root,
+        turret,
+        barrel,
+        muzzle,
+
+        data,
+
+        hp:100,
+
+        velocity:0,
+
+        turretAngle:0,
+
+        weapon:"AP",
+
+        reload:0,
+
+        mgTimer:0,
+
+        invulnerable:1.5,
+
+        dead:false
+    };
+}
+
+
+/* =========================================================
+   CAMERAS
+========================================================= */
+
+function makeCamera(){
+
+    return new THREE.PerspectiveCamera(
+        68,
+        .5,
+        .1,
+        900
+    );
+}
+
+const cam1=
+    makeCamera();
+
+const cam2=
+    makeCamera();
+
+
+/* =========================================================
+   GAME STATE
+========================================================= */
+
+let tank1=null;
+let tank2=null;
+
+let p1Choice="medium";
+let p2Choice="medium";
+
+let selecting=1;
+let gameRunning=false;
+
+const keys={};
+
+
+/* =========================================================
+   INPUT
+========================================================= */
+
+addEventListener(
+    "keydown",
+    e=>{
+
+        keys[e.code]=true;
+
+        if([
+            "Space",
+            "Enter",
+            "ArrowUp",
+            "ArrowDown",
+            "ArrowLeft",
+            "ArrowRight"
+        ].includes(e.code)){
+            e.preventDefault();
+        }
+
+        if(!gameRunning)return;
+
+        if(e.code==="Digit1")
+            tank1.weapon="MG";
+
+        if(e.code==="Digit2")
+            tank1.weapon="HE";
+
+        if(e.code==="Digit3")
+            tank1.weapon="AP";
+
+
+        if(e.code==="KeyJ")
+            tank2.weapon="MG";
+
+        if(e.code==="KeyK")
+            tank2.weapon="HE";
+
+        if(e.code==="KeyL")
+            tank2.weapon="AP";
+
+
+        if(e.code==="Space")
+            fire(tank1);
+
+        if(e.code==="Enter")
+            fire(tank2);
+    }
+);
+
+
+addEventListener(
+    "keyup",
+    e=>{
+        keys[e.code]=false;
+    }
+);
+
+
+/* =========================================================
+   DRIVE
+========================================================= */
+
+function drive(
+    t,
+    player,
+    dt
+){
+
+    if(!t || t.dead)
+        return;
+
+    let forward=0;
+    let turn=0;
+    let turret=0;
+
+
+    if(player===1){
+
+        if(keys.KeyW)
+            forward++;
+
+        if(keys.KeyS)
+            forward--;
+
+        if(keys.KeyA)
+            turn++;
+
+        if(keys.KeyD)
+            turn--;
+
+        if(keys.KeyQ)
+            turret++;
+
+        if(keys.KeyE)
+            turret--;
+
+    }else{
+
+        if(keys.ArrowUp)
+            forward++;
+
+        if(keys.ArrowDown)
+            forward--;
+
+        if(keys.ArrowLeft)
+            turn++;
+
+        if(keys.ArrowRight)
+            turn--;
+
+        if(keys.KeyN)
+            turret++;
+
+        if(keys.KeyM)
+            turret--;
+    }
+
+
+    /* ACCELERATION */
+
+    t.velocity+=
+        forward*
+        t.data.accel*
+        dt;
+
+
+    /* FRICTION */
+
+    t.velocity*=
+        Math.pow(
+            .12,
+            dt
+        );
+
+
+    /* LIMIT */
+
+    t.velocity=
+        Math.max(
+            -t.data.speed*.45,
+            Math.min(
+                t.data.speed,
+                t.velocity
+            )
+        );
+
+
+    /* BODY TURN */
+
+    if(
+        Math.abs(t.velocity)>.05
+    ){
+
+        t.root.rotation.y+=
+            turn*
+            t.data.turn*
+            dt*
+            Math.min(
+                1,
+                Math.abs(t.velocity)/5+.25
+            );
+    }
+
+
+    /* TURRET */
+
+    t.turretAngle+=
+        turret*
+        1.7*
+        dt;
+
+    t.turret.rotation.y=
+        t.turretAngle;
+
+
+    /* MOVEMENT */
+
+    const direction=
+        new THREE.Vector3(
+            Math.sin(
+                t.root.rotation.y
+            ),
+            0,
+            Math.cos(
+                t.root.rotation.y
+            )
+        );
+
+    t.root.position.addScaledVector(
+        direction,
+        t.velocity*dt
+    );
+
+
+    collideTank(t);
+}
+
+
+/* =========================================================
+   COLLISION
+========================================================= */
+
+function collideTank(t){
+
+    const pos=
+        t.root.position;
+
+
+    for(
+        const obj of objects
+    ){
+
+        if(
+            !obj.mesh.visible ||
+            obj.broken
+        )
+            continue;
+
+
+        /*
+           Roads are NOT obstacles.
+        */
+
+        if(
+            obj.name==="ROAD"
+        )
+            continue;
+
+
+        /*
+           RUBBLE can be driven over.
+        */
+
+        if(
+            obj.name==="RUBBLE"
+        ){
+
+            const d=
+                pos.distanceTo(
+                    obj.mesh.position
+                );
+
+            if(d<8)
+                t.velocity*=.86;
+
+            continue;
+        }
+
+
+        const p=
+            obj.mesh.position;
+
+        const dx=
+            pos.x-p.x;
+
+        const dz=
+            pos.z-p.z;
+
+        const dist=
+            Math.hypot(
+                dx,
+                dz
+            );
+
+
+        if(
+            dist<7
+        ){
+
+            if(
+                dist>.01
+            ){
+
+                const push=
+                    7-dist;
+
+                pos.x+=
+                    (dx/dist)*
+                    push*.2;
+
+                pos.z+=
+                    (dz/dist)*
+                    push*.2;
+            }
+
+            t.velocity*=.68;
+        }
+    }
+
+
+    /*
+       Tank vs tank collision
+    */
+
+    const other=
+        t===tank1
+        ?tank2
+        :tank1;
+
+    if(
+        other &&
+        !other.dead
+    ){
+
+        const dx=
+            pos.x-
+            other.root.position.x;
+
+        const dz=
+            pos.z-
+            other.root.position.z;
+
+        const d=
+            Math.hypot(
+                dx,
+                dz
+            );
+
+        if(
+            d<10 &&
+            d>.01
+        ){
+
+            const push=
+                10-d;
+
+            pos.x+=
+                dx/d*
+                push*.35;
+
+            pos.z+=
+                dz/d*
+                push*.35;
+
+            t.velocity*=.7;
+        }
+    }
+
+
+    /*
+       World boundary
+    */
+
+    pos.x=
+        Math.max(
+            -WORLD+8,
+            Math.min(
+                WORLD-8,
+                pos.x
+            )
+        );
+
+    pos.z=
+        Math.max(
+            -WORLD+8,
+            Math.min(
+                WORLD-8,
+                pos.z
+            )
+        );
+}
+
+
+/* =========================================================
+   MUZZLE WORLD POSITION
+========================================================= */
+
+function muzzleWorld(t){
+
+    const p=
+        new THREE.Vector3();
+
+    t.muzzle.getWorldPosition(p);
+
+    return p;
+}
+
+
+/* =========================================================
+   AIM DIRECTION
+========================================================= */
+
+function aimDirection(t){
+
+    const q=
+        new THREE.Quaternion();
+
+    t.turret.getWorldQuaternion(q);
+
+    return new THREE.Vector3(
+        0,
+        0,
+        1
+    )
+    .applyQuaternion(q)
+    .normalize();
+}
+
+
+/* =========================================================
+   ARMOR
+========================================================= */
+
+function armorInfo(
+    attacker,
+    target
+){
+
+    const difference=
+        attacker.root.position
+        .clone()
+        .sub(
+            target.root.position
+        );
+
+    const angle=
+        Math.atan2(
+            difference.x,
+            difference.z
+        );
+
+    let relative=
+        angle-
+        target.root.rotation.y;
+
+    relative=
+        Math.atan2(
+            Math.sin(relative),
+            Math.cos(relative)
+        );
+
+
+    let armor;
+
+    if(
+        Math.abs(relative)
+        <Math.PI/4
+    ){
+
+        armor=
+            target.data.front;
+
+    }else if(
+        Math.abs(relative)
+        >3*Math.PI/4
+    ){
+
+        armor=
+            target.data.rear;
+
+    }else{
+
+        armor=
+            target.data.side;
+    }
+
+
+    const aim=
+        aimDirection(attacker);
+
+    const targetDirection=
+        target.root.position
+        .clone()
+        .sub(
+            attacker.root.position
+        )
+        .normalize();
+
+    const accuracy=
+        Math.max(
+            0,
+            Math.min(
+                1,
+                aim.dot(
+                    targetDirection
+                )
+            )
+        );
+
+
+    return{
+
+        armor,
+        accuracy,
+
+        ratio:
+            attacker.data.apPen/
+            armor
+    };
+}
+
+
+/* =========================================================
+   CROSSHAIR
+========================================================= */
+
+function updateCrosshair(
+    attacker,
+    target,
+    id
+){
+
+    const cross=
+        document.getElementById(id);
+
+    if(
+        !attacker ||
+        !target ||
+        target.dead
+    ){
+
+        cross.className=
+            "crosshair";
+
+        return;
+    }
+
+
+    const muzzle=
+        muzzleWorld(attacker);
+
+    const direction=
+        aimDirection(attacker);
+
+    const toTarget=
+        target.root.position
+        .clone()
+        .sub(muzzle);
+
+    const distanceAlong=
+        toTarget.dot(
+            direction
+        );
+
+
+    if(
+        distanceAlong<0
+    ){
+
+        cross.className=
+            "crosshair red";
+
+        return;
+    }
+
+
+    const closest=
+        muzzle.clone()
+        .addScaledVector(
+            direction,
+            distanceAlong
+        );
+
+    const miss=
+        closest.distanceTo(
+            target.root.position
+        );
+
+
+    if(
+        miss>8
+    ){
+
+        cross.className=
+            "crosshair";
+
+        return;
+    }
+
+
+    const info=
+        armorInfo(
+            attacker,
+            target
+        );
+
+
+    if(
+        info.ratio>=1.3
+    ){
+
+        cross.className=
+            "crosshair green";
+
+    }else if(
+        info.ratio>=.9
+    ){
+
+        cross.className=
+            "crosshair yellow";
+
+    }else{
+
+        cross.className=
+            "crosshair red";
+    }
+}
+
+
+/* =========================================================
+   FIRE
+========================================================= */
+
+function fire(t){
+
+    if(
+        !gameRunning ||
+        !t ||
+        t.dead
+    )
+        return;
+
+
+    if(
+        t.reload>0
+    )
+        return;
+
+
+    if(
+        t.weapon==="MG"
+    ){
+
+        if(
+            t.mgTimer>0
+        )
+            return;
+
+        t.mgTimer=.11;
+
+        createProjectile(
+            t,
+            .3,
+            125,
+            18,
+            t.data.mgDamage,
+            "MG",
+            0xd9d9d9
+        );
+
+        return;
+    }
+
+
+    if(
+        t.weapon==="HE"
+    ){
+
+        t.reload=
+            t.data.heReload;
+
+        createProjectile(
+            t,
+            .5,
+            80,
+            t.data.hePen,
+            t.data.heDamage,
+            "HE",
+            0xffa21f
+        );
+
+        return;
+    }
+
+
+    t.reload=
+        t.data.apReload;
+
+    createProjectile(
+        t,
+        .4,
+        145,
+        t.data.apPen,
+        t.data.apDamage,
+        "AP",
+        0xffe5a0
+    );
+}
+
+
+/* =========================================================
+   PROJECTILE CREATION
+========================================================= */
+
+function createProjectile(
+    tank,
+    radius,
+    speed,
+    penetration,
+    damage,
+    type,
+    color
+){
+
+    const position=
+        muzzleWorld(tank);
+
+    const direction=
+        aimDirection(tank);
+
+    const mesh=
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                radius,
+                10,
+                10
+            ),
+            new THREE.MeshStandardMaterial({
+                color,
+                emissive:
+                    type==="HE"
+                    ?0x331000
+                    :0x111111
+            })
+        );
+
+    mesh.position.copy(
+        position
+    );
+
+    mesh.castShadow=true;
+
+    scene.add(mesh);
+
+
+    shells.push({
+
+        mesh,
+
+        owner:tank,
+
+        velocity:
+            direction
+            .multiplyScalar(speed),
+
+        gravity:
+            type==="MG"
+            ?0
+            :-15,
+
+        penetration,
+
+        damage,
+
+        type,
+
+        life:6
+    });
+
+
+    muzzleFlash(
+        position,
+        type
+    );
+}
+
+
+/* =========================================================
+   MUZZLE FLASH
+========================================================= */
+
+function muzzleFlash(
+    position,
+    type
+){
+
+    const size=
+        type==="MG"
+        ?1.3
+        :3;
+
+    const mesh=
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                size,
+                12,
+                12
+            ),
+            new THREE.MeshBasicMaterial({
+                color:
+                    type==="MG"
+                    ?0xffe16b
+                    :0xff7a18,
+                transparent:true,
+                opacity:.9
+            })
+        );
+
+    mesh.position.copy(
+        position
+    );
+
+    scene.add(mesh);
+
+
+    effects.push({
+
+        mesh,
+
+        life:.09,
+
+        max:.09,
+
+        scale:size,
+
+        type:"flash"
+    });
+}
+
+
+/* =========================================================
+   CRATER
+========================================================= */
+
+function crater(
+    x,
+    z,
+    r
+){
+
+    const mesh=
+        new THREE.Mesh(
+            new THREE.RingGeometry(
+                r*.45,
+                r,
+                28
+            ),
+            new THREE.MeshStandardMaterial({
+                color:0x30322f,
+                roughness:1
+            })
+        );
+
+    mesh.rotation.x=
+        -Math.PI/2;
+
+    mesh.position.set(
+        x,
+        .08,
+        z
+    );
+
+    scene.add(mesh);
+
+    craters.push(mesh);
+}
+
+
+/* =========================================================
+   EXPLOSION
+========================================================= */
+
+function explosion(
+    position,
+    power=1,
+    damage=0,
+    owner=null
+){
+
+    const fire=
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                1,
+                18,
+                18
+            ),
+            new THREE.MeshBasicMaterial({
+                color:0xff8a16,
+                transparent:true,
+                opacity:.95
+            })
+        );
+
+    fire.position.copy(
+        position
+    );
+
+    scene.add(fire);
+
+
+    const smoke=
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                1,
+                14,
+                14
+            ),
+            new THREE.MeshStandardMaterial({
+                color:0x252525,
+                transparent:true,
+                opacity:.7
+            })
+        );
+
+    smoke.position.copy(
+        position
+    );
+
+    scene.add(smoke);
+
+
+    effects.push({
+
+        mesh:fire,
+
+        life:.55,
+
+        max:.55,
+
+        scale:4*power,
+
+        type:"fire"
+    });
+
+
+    effects.push({
+
+        mesh:smoke,
+
+        life:2,
+
+        max:2,
+
+        scale:5*power,
+
+        type:"smoke"
+    });
+
+
+    crater(
+        position.x,
+        position.z,
+        Math.min(
+            13,
+            2.5*power
+        )
+    );
+
+
+    /* DEBRIS */
+
+    const count=
+        Math.floor(
+            12*power
+        );
+
+    for(
+        let i=0;
+        i<count;
+        i++
+    ){
+
+        const s=
+            .2+
+            Math.random()*
+            .8*
+            power;
+
+        const chunk=
+            new THREE.Mesh(
+                new THREE.BoxGeometry(
+                    s,
+                    s,
+                    s
+                ),
+                Math.random()>.4
+                ?MAT.rubble
+                :MAT.metal
+            );
+
+        chunk.position.copy(
+            position
+        );
+
+        chunk.castShadow=true;
+
+        scene.add(chunk);
+
+
+        particles.push({
+
+            mesh:chunk,
+
+            velocity:
+                new THREE.Vector3(
+                    (Math.random()-.5)*
+                    20*
+                    power,
+
+                    6+
+                    Math.random()*
+                    18*
+                    power,
+
+                    (Math.random()-.5)*
+                    20*
+                    power
+                ),
+
+            life:
+                2+
+                Math.random()*4
+        });
+    }
+
+
+    /* BLAST TANK DAMAGE */
+
+    for(
+        const tank of [
+            tank1,
+            tank2
+        ]
+    ){
+
+        if(
+            !tank ||
+            tank.dead ||
+            tank===owner
+        )
+            continue;
+
+        const distance=
+            tank.root.position
+            .distanceTo(
+                position
+            );
+
+        const radius=
+            20*power;
+
+        if(
+            distance<radius
+        ){
+
+            const factor=
+                1-
+                distance/radius;
+
+            hurtTank(
+                tank,
+                damage*factor,
+                owner
+            );
+
+
+            const push=
+                tank.root.position
+                .clone()
+                .sub(position);
+
+            push.y=0;
+
+            if(
+                push.length()>.01
+            ){
+
+                push.normalize();
+
+                tank.velocity+=
+                    power*
+                    7*
+                    factor;
+            }
+        }
+    }
+
+
+    /* BLAST BUILDINGS AND OTHER OBJECTS */
+
+    for(
+        const obj of destructibles
+    ){
+
+        if(
+            obj.broken ||
+            !obj.mesh.visible
+        )
+            continue;
+
+
+        const distance=
+            obj.mesh.position
+            .distanceTo(
+                position
+            );
+
+        const radius=
+            17*power;
+
+
+        if(
+            distance<radius
+        ){
+
+            obj.hp-=
+                damage*.8+
+                power*
+                22*
+                (
+                    1-
+                    distance/radius
+                );
+
+
+            if(
+                obj.hp<=0
+            ){
+                breakObject(obj);
+            }
+        }
+    }
+}
+
+
+/* =========================================================
+   DESTRUCTIBLE OBJECT
+========================================================= */
+
+function breakObject(
+    obj
+){
+
+    if(
+        obj.broken
+    )
+        return;
+
+
+    obj.broken=true;
+
+    const position=
+        obj.mesh.position.clone();
+
+    scene.remove(
+        obj.mesh
+    );
+
+    obj.mesh.visible=false;
+
+
+    /*
+       BUILDINGS BREAK INTO MANY CHUNKS.
+    */
+
+    let count=12;
+
+    if(
+        obj.name==="BUILDING"
+    )
+        count=30;
+
+    if(
+        obj.name==="BUILDING_SECTION"
+    )
+        count=6;
+
+
+    count=Math.max(
+        count,
+        Math.round(
+            (
+                obj.sx+
+                obj.sy+
+                obj.sz
+            )/2
+        )
+    );
+
+
+    for(
+        let i=0;
+        i<count;
+        i++
+    ){
+
+        const size=
+            .35+
+            Math.random()*
+            1.8;
+
+
+        const chunk=
+            new THREE.Mesh(
+                new THREE.BoxGeometry(
+                    Math.min(
+                        size,
+                        obj.sx
+                    ),
+                    Math.min(
+                        size,
+                        obj.sy
+                    ),
+                    Math.min(
+                        size,
+                        obj.sz
+                    )
+                ),
+                obj.name.includes(
+                    "BUILDING"
+                )
+                ?MAT.brick
+                :MAT.rubble
+            );
+
+
+        chunk.position.copy(
+            position
+        );
+
+
+        chunk.position.x+=
+            (
+                Math.random()-.5
+            )*
+            obj.sx;
+
+
+        chunk.position.y+=
+            Math.random()*
+            Math.max(
+                1,
+                obj.sy
+            );
+
+
+        chunk.position.z+=
+            (
+                Math.random()-.5
+            )*
+            obj.sz;
+
+
+        chunk.rotation.set(
+            Math.random(),
+            Math.random(),
+            Math.random()
+        );
+
+        chunk.castShadow=true;
+
+        scene.add(chunk);
+
+
+        particles.push({
+
+            mesh:chunk,
+
+            velocity:
+                new THREE.Vector3(
+                    (Math.random()-.5)*13,
+                    3+
+                    Math.random()*14,
+                    (Math.random()-.5)*13
+                ),
+
+            life:
+                8+
+                Math.random()*15
+        });
+    }
+
+
+    /*
+       Smaller destruction explosion.
+    */
+
+    explosion(
+        position,
+        .8,
+        0,
+        null
+    );
+}
+
+
+/* =========================================================
+   TANK DAMAGE
+========================================================= */
+
+function hurtTank(
+    tank,
+    damage,
+    attacker
+){
+
+    if(
+        tank.dead ||
+        tank.invulnerable>0
+    )
+        return;
+
+
+    tank.hp-=
+        Math.max(
+            0,
+            damage
+        );
+
+
+    if(
+        tank.hp<=0
+    ){
+
+        tank.hp=0;
+
+        destroyTank(
+            tank,
+            attacker
+        );
+    }
+}
+
+
+/* =========================================================
+   ARMOR HIT
+========================================================= */
+
+function hitTank(
+    attacker,
+    target,
+    projectile
+){
+
+    const info=
+        armorInfo(
+            attacker,
+            target
+        );
+
+
+    let chance=
+        (
+            projectile.penetration/
+            info.armor
+        )*.72+
+        info.accuracy*.25;
+
+
+    chance=
+        Math.max(
+            .04,
+            Math.min(
+                1,
+                chance
+            )
+        );
+
+
+    const penetrates=
+        Math.random()<chance;
+
+
+    if(penetrates){
+
+        let damage=
+            projectile.damage;
+
+
+        if(
+            projectile.type==="AP"
+        ){
+
+            damage*=
+                1+
+                Math.random()*.25;
+        }
+
+
+        if(
+            projectile.type==="HE"
+        ){
+
+            damage*=
+                .9+
+                Math.random()*.15;
+        }
+
+
+        hurtTank(
+            target,
+            damage,
+            attacker
+        );
+
+
+        explosion(
+            projectile.mesh.position,
+            .45,
+            0,
+            null
+        );
+
+
+    }else{
+
+        /*
+           Non-penetrating hit:
+           armor sparks, little damage.
+        */
+
+        explosion(
+            projectile.mesh.position,
+            .25,
+            0,
+            null
+        );
+    }
+}
+
+
+/* =========================================================
+   TANK DEATH
+========================================================= */
+
+function destroyTank(
+    tank,
+    killer
+){
+
+    if(
+        tank.dead
+    )
+        return;
+
+
+    tank.dead=true;
+
+
+    const position=
+        tank.root.position.clone();
+
+
+    scene.remove(
+        tank.root
+    );
+
+
+    /*
+       MASSIVE FINAL EXPLOSION
+    */
+
+    explosion(
+        position,
+        5,
+        45,
+        killer
+    );
+
+    explosion(
+        position.clone().add(
+            new THREE.Vector3(
+                3,
+                2,
+                0
+            )
+        ),
+        3.5,
+        25,
+        killer
+    );
+
+    explosion(
+        position.clone().add(
+            new THREE.Vector3(
+                -3,
+                1,
+                2
+            )
+        ),
+        3,
+        20,
+        killer
+    );
+
+
+    /*
+       TANK FRAGMENTS
+    */
+
+    for(
+        let i=0;
+        i<55;
+        i++
+    ){
+
+        const chunk=
+            new THREE.Mesh(
+                new THREE.BoxGeometry(
+                    .5+
+                    Math.random()*1.5,
+
+                    .4+
+                    Math.random()*1.4,
+
+                    .5+
+                    Math.random()*1.5
+                ),
+                MAT.metal
+            );
+
+
+        chunk.position.copy(
+            position
+        );
+
+        chunk.position.y+=
+            1+
+            Math.random()*4;
+
+
+        scene.add(chunk);
+
+
+        particles.push({
+
+            mesh:chunk,
+
+            velocity:
+                new THREE.Vector3(
+                    (Math.random()-.5)*40,
+
+                    10+
+                    Math.random()*32,
+
+                    (Math.random()-.5)*40
+                ),
+
+            life:
+                5+
+                Math.random()*7
+        });
+    }
+
+
+    setTimeout(
+        ()=>{
+
+            if(
+                tank===tank1
+            ){
+
+                showGameOver(
+                    "PLAYER 2 WINS"
+                );
+
+            }else{
+
+                showGameOver(
+                    "PLAYER 1 WINS"
+                );
+            }
+
+        },
+        1500
+    );
+}
+
+
+/* =========================================================
+   PROJECTILE PHYSICS
+========================================================= */
+
+function updateShells(dt){
+
+    for(
+        let i=shells.length-1;
+        i>=0;
+        i--
+    ){
+
+        const s=
+            shells[i];
+
+        s.life-=dt;
+
+
+        s.velocity.y+=
+            s.gravity*
+            dt;
+
+
+        s.mesh.position.addScaledVector(
+            s.velocity,
+            dt
+        );
+
+
+        let remove=
+            s.life<=0;
+
+
+        /* OBJECT HIT */
+
+        for(
+            const obj of objects
+        ){
+
+            if(
+                obj.broken ||
+                !obj.mesh.visible ||
+                obj.name==="ROAD"
+            )
+                continue;
+
+
+            /*
+               Buildings use their actual
+               dimensions for collision.
+            */
+
+            const halfX=
+                obj.sx/2;
+
+            const halfY=
+                obj.sy/2;
+
+            const halfZ=
+                obj.sz/2;
+
+            const dx=
+                Math.abs(
+                    s.mesh.position.x-
+                    obj.mesh.position.x
+                );
+
+            const dy=
+                Math.abs(
+                    s.mesh.position.y-
+                    obj.mesh.position.y
+                );
+
+            const dz=
+                Math.abs(
+                    s.mesh.position.z-
+                    obj.mesh.position.z
+                );
+
+
+            if(
+                dx<
+                    halfX+.7 &&
+                dy<
+                    halfY+.7 &&
+                dz<
+                    halfZ+.7
+            ){
+
+                if(
+                    s.type==="HE"
+                ){
+
+                    /*
+                       HE is the building killer.
+                    */
+
+                    explosion(
+                        s.mesh.position,
+                        2.2,
+                        s.damage,
+                        s.owner
+                    );
+
+
+                    obj.hp-=
+                        s.damage*
+                        2.4;
+
+
+                    if(
+                        obj.hp<=0
+                    ){
+
+                        breakObject(
+                            obj
+                        );
+                    }
+
+
+                }else if(
+                    s.type==="AP"
+                ){
+
+                    /*
+                       AP can punch through
+                       structural objects.
+                    */
+
+                    obj.hp-=
+                        s.damage*.7;
+
+
+                    if(
+                        obj.hp<=0
+                    ){
+
+                        breakObject(
+                            obj
+                        );
+                    }
+
+
+                    explosion(
+                        s.mesh.position,
+                        .45,
+                        0,
+                        null
+                    );
+
+
+                }else{
+
+                    obj.hp-=
+                        s.damage;
+
+
+                    if(
+                        obj.hp<=0
+                    ){
+
+                        breakObject(
+                            obj
+                        );
+                    }
+
+
+                    explosion(
+                        s.mesh.position,
+                        .18,
+                        0,
+                        null
+                    );
+                }
+
+
+                remove=true;
+
+                break;
+            }
+        }
+
+
+        /* TANK HIT */
+
+        for(
+            const target of [
+                tank1,
+                tank2
+            ]
+        ){
+
+            if(
+                !target ||
+                target.dead ||
+                target===s.owner
+            )
+                continue;
+
+
+            const targetPoint=
+                target.root.position.clone();
+
+            targetPoint.y+=3;
+
+
+            if(
+                s.mesh.position
+                .distanceTo(
+                    targetPoint
+                )
+                <6
+            ){
+
+                if(
+                    s.type==="MG"
+                ){
+
+                    hurtTank(
+                        target,
+                        s.damage,
+                        s.owner
+                    );
+
+
+                    explosion(
+                        s.mesh.position,
+                        .15,
+                        0,
+                        null
+                    );
+
+                }else{
+
+                    hitTank(
+                        s.owner,
+                        target,
+                        s
+                    );
+                }
+
+
+                remove=true;
+
+                break;
+            }
+        }
+
+
+        /* GROUND */
+
+        if(
+            s.mesh.position.y<.15
+        ){
+
+            if(
+                s.type==="HE"
+            ){
+
+                explosion(
+                    s.mesh.position,
+                    1.7,
+                    s.damage*.3,
+                    s.owner
+                );
+
+            }else{
+
+                explosion(
+                    s.mesh.position,
+                    .3,
+                    0,
+                    null
+                );
+            }
+
+            remove=true;
+        }
+
+
+        if(
+            remove
+        ){
+
+            scene.remove(
+                s.mesh
+            );
+
+            shells.splice(
+                i,
+                1
+            );
+        }
+    }
+}
+
+
+/* =========================================================
+   PARTICLES
+========================================================= */
+
+function updateParticles(dt){
+
+    for(
+        let i=particles.length-1;
+        i>=0;
+        i--
+    ){
+
+        const p=
+            particles[i];
+
+        p.life-=dt;
+
+
+        p.velocity.y-=
+            22*dt;
+
+
+        p.mesh.position.addScaledVector(
+            p.velocity,
+            dt
+        );
+
+
+        p.mesh.rotation.x+=
+            dt*2;
+
+        p.mesh.rotation.y+=
+            dt*3;
+
+
+        if(
+            p.mesh.position.y<.1
+        ){
+
+            p.mesh.position.y=.1;
+
+            p.velocity.multiplyScalar(
+                .25
+            );
+        }
+
+
+        if(
+            p.life<=0
+        ){
+
+            scene.remove(
+                p.mesh
+            );
+
+            particles.splice(
+                i,
+                1
+            );
+        }
+    }
+}
+
+
+/* =========================================================
+   EFFECTS
+========================================================= */
+
+function updateEffects(dt){
+
+    for(
+        let i=effects.length-1;
+        i>=0;
+        i--
+    ){
+
+        const e=
+            effects[i];
+
+        e.life-=dt;
+
+
+        const progress=
+            1-
+            e.life/e.max;
+
+
+        if(
+            e.type==="flash"
+        ){
+
+            e.mesh.scale.setScalar(
+                .4+
+                progress*
+                e.scale
+            );
+
+        }else if(
+            e.type==="fire"
+        ){
+
+            e.mesh.scale.setScalar(
+                .3+
+                progress*
+                e.scale
+            );
+
+            e.mesh.material.opacity=
+                e.life/e.max;
+
+        }else{
+
+            e.mesh.scale.setScalar(
+                .4+
+                progress*
+                e.scale
+            );
+
+            e.mesh.position.y+=
+                dt*2;
+
+            e.mesh.material.opacity=
+                .7*
+                e.life/e.max;
+        }
+
+
+        if(
+            e.life<=0
+        ){
+
+            scene.remove(
+                e.mesh
+            );
+
+            effects.splice(
+                i,
+                1
+            );
+        }
+    }
+}
+
+
+/* =========================================================
+   CAMERA
+========================================================= */
+
+function updateCamera(
+    tank,
+    camera,
+    dt
+){
+
+    if(
+        !tank ||
+        tank.dead
+    )
+        return;
+
+
+    const direction=
+        aimDirection(tank);
+
+
+    const desired=
+        tank.root.position
+        .clone()
+        .add(
+            new THREE.Vector3(
+                0,
+                8,
+                0
+            )
+        )
+        .addScaledVector(
+            direction,
+            -18
+        );
+
+    desired.y+=2;
+
+
+    camera.position.lerp(
+        desired,
+        1-
+        Math.pow(
+            .001,
+            dt
+        )
+    );
+
+
+    const look=
+        tank.root.position
+        .clone()
+        .add(
+            new THREE.Vector3(
+                0,
+                4.5,
+                0
+            )
+        )
+        .addScaledVector(
+            direction,
+            35
+        );
+
+
+    camera.lookAt(
+        look
+    );
+}
+
+
+/* =========================================================
+   HUD
+========================================================= */
+
+function updateHUD(){
+
+    if(
+        !tank1 ||
+        !tank2
+    )
+        return;
+
+
+    for(
+        const [
+            tank,
+            id
+        ] of [
+            [tank1,1],
+            [tank2,2]
+        ]
+    ){
+
+        document.getElementById(
+            "hp"+id
+        ).style.width=
+            tank.hp+
+            "%";
+
+
+        document.getElementById(
+            "hpt"+id
+        ).textContent=
+            Math.ceil(
+                tank.hp
+            )+
+            " HP";
+
+
+        document.getElementById(
+            "weapon"+id
+        ).textContent=
+            tank.weapon+
+            (
+                tank.reload>0
+                ?" • RELOADING"
+                :""
+            );
+
+
+        document.getElementById(
+            "status"+id
+        ).textContent=
+            "SPEED "+
+            Math.abs(
+                tank.velocity
+            ).toFixed(1)+
+            " m/s";
+    }
+
+
+    updateCrosshair(
+        tank1,
+        tank2,
+        "cross1"
+    );
+
+
+    updateCrosshair(
+        tank2,
+        tank1,
+        "cross2"
+    );
+}
+
+
+/* =========================================================
+   MINIMAP
+========================================================= */
+
+function drawMap(
+    canvas,
+    self,
+    enemy
+){
+
+    const ctx=
+        canvas.getContext(
+            "2d"
+        );
+
+
+    ctx.clearRect(
+        0,
+        0,
+        145,
+        145
+    );
+
+
+    ctx.fillStyle="#1d211f";
+
+    ctx.fillRect(
+        0,
+        0,
+        145,
+        145
+    );
+
+
+    const scale=
+        145/
+        (WORLD*2);
+
+
+    /* ROADS */
+
+    ctx.strokeStyle="#424644";
+    ctx.lineWidth=7;
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        0,
+        72
+    );
+
+    ctx.lineTo(
+        145,
+        72
+    );
+
+    ctx.stroke();
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        72,
+        0
+    );
+
+    ctx.lineTo(
+        72,
+        145
+    );
+
+    ctx.stroke();
+
+
+    /* OBJECTS */
+
+    for(
+        const obj of objects
+    ){
+
+        if(
+            !obj.mesh.visible ||
+            obj.broken
+        )
+            continue;
+
+
+        if(
+            obj.name==="ROAD"
+        )
+            continue;
+
+
+        const x=
+            (
+                obj.mesh.position.x+
+                WORLD
+            )*
+            scale;
+
+
+        const y=
+            (
+                obj.mesh.position.z+
+                WORLD
+            )*
+            scale;
+
+
+        ctx.fillStyle=
+            obj.name.includes(
+                "BUILDING"
+            )
+            ?" #74685e"
+            :"#575b58";
+
+
+        ctx.fillRect(
+            x-2,
+            y-2,
+            4,
+            4
+        );
+    }
+
+
+    function drawTank(
+        tank,
+        color
+    ){
+
+        if(
+            !tank ||
+            tank.dead
+        )
+            return;
+
+
+        const x=
+            (
+                tank.root.position.x+
+                WORLD
+            )*
+            scale;
+
+
+        const y=
+            (
+                tank.root.position.z+
+                WORLD
+            )*
+            scale;
+
+
+        ctx.fillStyle=color;
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            y,
+            5,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+    }
+
+
+    drawTank(
+        self,
+        "#55ff55"
+    );
+
+
+    drawTank(
+        enemy,
+        "#cccccc"
+    );
+}
+
+
+/* =========================================================
+   RESET
+========================================================= */
+
+function resetWorld(){
+
+    /*
+       Restore original destructible
+       objects.
+    */
+
+    for(
+        const obj of objects
+    ){
+
+        if(
+            !obj.destructible
+        )
+            continue;
+
+
+        obj.hp=
+            obj.maxhp;
+
+        obj.broken=false;
+
+        obj.mesh.visible=true;
+
+
+        if(
+            !scene.children.includes(
+                obj.mesh
+            )
+        ){
+
+            scene.add(
+                obj.mesh
+            );
+        }
+    }
+
+
+    /*
+       Remove flying debris.
+    */
+
+    for(
+        const p of particles
+    ){
+
+        scene.remove(
+            p.mesh
+        );
+    }
+
+    particles.length=0;
+
+
+    /*
+       Remove effects.
+    */
+
+    for(
+        const e of effects
+    ){
+
+        scene.remove(
+            e.mesh
+        );
+    }
+
+    effects.length=0;
+
+
+    /*
+       Remove shells.
+    */
+
+    for(
+        const s of shells
+    ){
+
+        scene.remove(
+            s.mesh
+        );
+    }
+
+    shells.length=0;
+
+
+    /*
+       Remove old craters.
+    */
+
+    for(
+        const c of craters
+    ){
+
+        scene.remove(
+            c
+        );
+    }
+
+    craters.length=0;
+}
+
+
+/* =========================================================
+   TANK SELECTION
+========================================================= */
+
+function showSelection(){
+
+    document.getElementById(
+        "menu"
+    ).style.display="none";
+
+
+    document.getElementById(
+        "gameover"
+    ).style.display="none";
+
+
+    document.getElementById(
+        "select"
+    ).style.display="flex";
+
+
+    document.getElementById(
+        "selectTitle"
+    ).textContent=
+        selecting===1
+        ?"PLAYER 1 — CHOOSE TANK"
+        :"PLAYER 2 — CHOOSE TANK";
+
+
+    const cards=
+        document.getElementById(
+            "tankCards"
+        );
+
+
+    cards.innerHTML="";
+
+
+    for(
+        const [
+            key,
+            data
+        ] of Object.entries(TANKS)
+    ){
+
+        const card=
+            document.createElement(
+                "div"
+            );
+
+        card.className="card";
+
+
+        card.innerHTML=`
+
+            <b>${data.name}</b>
+
+            <div class="preview">
+
+                <div class="pbody"></div>
+                <div class="pturret"></div>
+                <div class="pgun"></div>
+
+            </div>
+
+            <div class="legend">
+
+                Speed: ${data.speed}<br>
+                Acceleration: ${data.accel}<br>
+                Front armor: ${data.front}<br>
+                Side armor: ${data.side}<br>
+                Rear armor: ${data.rear}<br>
+                AP penetration: ${data.apPen}
+
+                <br><br>
+
+                <span style="color:#55ff55">
+                ■ STRONG
+                </span>
+
+                <span style="color:#ffe342">
+                ■ MEDIUM
+                </span>
+
+                <span style="color:#ff4444">
+                ■ WEAK
+                </span>
+
+            </div>
+        `;
+
+
+        card.onclick=()=>{
+
+            if(
+                selecting===1
+            ){
+
+                p1Choice=key;
+
+                selecting=2;
+
+                showSelection();
+
+            }else{
+
+                p2Choice=key;
+
+                startBattle();
+            }
+        };
+
+
+        cards.appendChild(
+            card
+        );
+    }
+}
+
+
+/* =========================================================
+   START BATTLE
+========================================================= */
+
+function startBattle(){
+
+    document.getElementById(
+        "select"
+    ).style.display="none";
+
+
+    document.getElementById(
+        "hud"
+    ).style.display="block";
+
+
+    resetWorld();
+
+
+    /*
+       MUCH farther apart now.
+
+       P1 is deep west.
+       P2 is deep east.
+
+       Buildings and city structures
+       occupy the space between them.
+    */
+
+    tank1=createTank(
+        0x356b35,
+        TANKS[p1Choice],
+
+        -270,
+        0,
+
+        Math.PI/2
+    );
+
+
+    tank2=createTank(
+        0x555555,
+        TANKS[p2Choice],
+
+        270,
+        0,
+
+        -Math.PI/2
+    );
+
+
+    gameRunning=true;
+
+    clock.start();
+}
+
+
+/* =========================================================
+   GAME OVER
+========================================================= */
+
+function showGameOver(
+    text
+){
+
+    gameRunning=false;
+
+
+    document.getElementById(
+        "hud"
+    ).style.display="none";
+
+
+    document.getElementById(
+        "gameover"
+    ).style.display="flex";
+
+
+    document.getElementById(
+        "winner"
+    ).textContent=text;
+
+
+    document.getElementById(
+        "message"
+    ).textContent=
+        "The battlefield is destroyed. Rematch and choose new tanks.";
+}
+
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+document.getElementById(
+    "start"
+).onclick=()=>{
+
+    selecting=1;
+
+    showSelection();
+};
+
+
+document.getElementById(
+    "rematch"
+).onclick=()=>{
+
+    selecting=1;
+
+    showSelection();
+};
+
+
+document.getElementById(
+    "mainmenu"
+).onclick=()=>{
+
+    document.getElementById(
+        "gameover"
+    ).style.display="none";
+
+
+    document.getElementById(
+        "menu"
+    ).style.display="flex";
+};
+
+
+/* =========================================================
+   MAIN LOOP
+========================================================= */
+
+function animate(){
+
+    requestAnimationFrame(
+        animate
+    );
+
+
+    const dt=
+        Math.min(
+            .04,
+            clock.getDelta()
+        );
+
+
+    if(
+        gameRunning
+    ){
+
+        /* RELOAD */
+
+        for(
+            const tank of [
+                tank1,
+                tank2
+            ]
+        ){
+
+            if(!tank)
+                continue;
+
+
+            tank.reload=
+                Math.max(
+                    0,
+                    tank.reload-dt
+                );
+
+
+            tank.mgTimer=
+                Math.max(
+                    0,
+                    tank.mgTimer-dt
+                );
+
+
+            tank.invulnerable=
+                Math.max(
+                    0,
+                    tank.invulnerable-dt
+                );
+        }
+
+
+        /* HOLD FIRE */
+
+        if(keys.Space)
+            fire(tank1);
+
+        if(keys.Enter)
+            fire(tank2);
+
+
+        /* MOVEMENT */
+
+        drive(
+            tank1,
+            1,
+            dt
+        );
+
+        drive(
+            tank2,
+            2,
+            dt
+        );
+
+
+        /* PHYSICS */
+
+        updateShells(dt);
+
+        updateParticles(dt);
+
+        updateEffects(dt);
+
+
+        /* CAMERAS */
+
+        updateCamera(
+            tank1,
+            cam1,
+            dt
+        );
+
+        updateCamera(
+            tank2,
+            cam2,
+            dt
+        );
+
+
+        /* HUD */
+
+        updateHUD();
+
+
+        /* MAPS */
+
+        drawMap(
+            document.getElementById(
+                "map1"
+            ),
+            tank1,
+            tank2
+        );
+
+
+        drawMap(
+            document.getElementById(
+                "map2"
+            ),
+            tank2,
+            tank1
+        );
+    }
+
+
+    /* =====================================================
+       TRUE VERTICAL SPLIT SCREEN
+    ===================================================== */
+
+    const half=
+        innerWidth/2;
+
+
+    renderer.setScissorTest(
+        true
+    );
+
+
+    renderer.clear();
+
+
+    /* PLAYER 1 */
+
+    renderer.setViewport(
+        0,
+        0,
+        half,
+        innerHeight
+    );
+
+
+    renderer.setScissor(
+        0,
+        0,
+        half,
+        innerHeight
+    );
+
+
+    cam1.aspect=
+        half/
+        innerHeight;
+
+
+    cam1.updateProjectionMatrix();
+
+
+    renderer.render(
+        scene,
+        cam1
+    );
+
+
+    /* PLAYER 2 */
+
+    renderer.setViewport(
+        half,
+        0,
+        half,
+        innerHeight
+    );
+
+
+    renderer.setScissor(
+        half,
+        0,
+        half,
+        innerHeight
+    );
+
+
+    cam2.aspect=
+        half/
+        innerHeight;
+
+
+    cam2.updateProjectionMatrix();
+
+
+    renderer.render(
+        scene,
+        cam2
+    );
+
+
+    renderer.setScissorTest(
+        false
+    );
+}
+
+
+/* =========================================================
+   RESIZE
+========================================================= */
+
+addEventListener(
+    "resize",
+    ()=>{
+
+        renderer.setSize(
+            innerWidth,
+            innerHeight
+        );
+    }
+);
+
+
+/* =========================================================
+   START
+========================================================= */
+
+showSelection();
+
+animate();
+
+</script>
+
+</body>
+</html>
